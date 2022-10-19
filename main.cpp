@@ -163,7 +163,7 @@ int main(void) {
     Direction direction = Direction::RIGHT;
 
     // snake initial status
-    const float initSpeed = 0.5f;
+    const float initSpeed = 0.25f;
     const int initScore = 0;
     float speed = initSpeed;
     int score = initScore;
