@@ -61,6 +61,7 @@ class windowInfo {
         char const *scoreString = to_string(score).c_str();
         scoreText.setString(scoreString);
     };
+    void showEndScreen();
     windowInfo() {
         loadTexture();
         loadFont();
@@ -119,6 +120,34 @@ void windowInfo::showGameScreen(vector<sf::Vector2i> &snake,
     }
 }
 
+void windowInfo::showEndScreen() {
+    const char *title = "GAME\nOVER";
+    const char *hint = "- Press any key to restart -";
+
+    sf::Text gameover(title, font, titleTextSize);
+    sf::Text pressToRestart(hint, font, hintTextSize);
+
+    gameover.setFillColor(sf::Color::Yellow);
+    gameover.setOutlineColor(sf::Color::Black);
+    gameover.setOutlineThickness(titleOutline);
+    gameover.setLineSpacing(0.7f);
+
+    const float positionX =
+        0.5 * (fieldSize.x * blockSize.x - gameover.getLocalBounds().width);
+
+    const float titlePositionY = 0.05 * fieldSize.y * blockSize.y;
+
+    const float hintPositionY =
+        titlePositionY + 2.2 * gameover.getCharacterSize();
+
+    gameover.setPosition(positionX, titlePositionY);
+    pressToRestart.setPosition(positionX, hintPositionY);
+
+    window.clear(sf::Color::Red);
+    window.draw(gameover);
+    window.draw(pressToRestart);
+}
+
 int main(void) {
     class windowInfo snakeGame;
 
@@ -134,8 +163,10 @@ int main(void) {
     Direction direction = Direction::RIGHT;
 
     // snake initial status
-    float speed = 0.5f;
-    int score = 0;
+    const float initSpeed = 0.5f;
+    const int initScore = 0;
+    float speed = initSpeed;
+    int score = initScore;
     bool isStart = false;
     bool isDead = false;
 
@@ -166,6 +197,21 @@ int main(void) {
                     }
                     if (evt.key.code == sf::Keyboard::Right) {
                         direction = Direction::RIGHT;
+                    }
+
+                    // initialize snake status when game over
+                    if (isDead) {
+                        isDead = false;
+                        direction = Direction::RIGHT;
+                        snakeGame.window.clear();
+                        speed = initSpeed;
+                        score = initScore;
+                        snakeGame.updateScore(score);
+                        srand((unsigned)time(NULL));
+                        food = {rand() % snakeGame.fieldSize.x,
+                                rand() % snakeGame.fieldSize.y};
+                        snake = {{rand() % snakeGame.fieldSize.x,
+                                  rand() % snakeGame.fieldSize.y}};
                     }
                 }
             }
@@ -221,6 +267,8 @@ int main(void) {
 
         if (!isStart) {
             snakeGame.showStartScreen();
+        } else if (isDead) {
+            snakeGame.showEndScreen();
         } else {
             snakeGame.showGameScreen(snake, food);
         }
